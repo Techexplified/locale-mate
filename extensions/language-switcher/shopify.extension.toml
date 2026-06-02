@@ -1,0 +1,7 @@
+api_version = "2025-04"
+
+[[extensions]]
+type = "theme"
+name = "LocaleMate Language Switcher"
+handle = "language-switcher"
+uid = "53010e8f-f3b0-a27c-17db-ca650a9f352152d618fc"

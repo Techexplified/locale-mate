@@ -1,0 +1,135 @@
+{{- 'language-switcher.css' | asset_url | stylesheet_tag -}}
+
+<div
+  id="localemate-switcher"
+  class="localemate-widget notranslate"
+  data-current-locale="{{ request.locale.iso_code }}"
+  aria-label="Language switcher"
+>
+  <!-- Trigger Button -->
+  <button
+    id="localemate-trigger"
+    class="localemate-trigger"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    aria-controls="localemate-dropdown"
+    type="button"
+  >
+    <span class="localemate-globe-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+    </span>
+    <span class="localemate-current-lang">{{ request.locale.name }}</span>
+    <span class="localemate-chevron" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </span>
+  </button>
+
+  <!-- Dropdown -->
+  <div
+    id="localemate-dropdown"
+    class="localemate-dropdown"
+    role="listbox"
+    aria-label="Select language"
+    hidden
+  >
+    <div class="localemate-dropdown-header">
+      <span>🌐 Select Language</span>
+    </div>
+    <ul class="localemate-list">
+      {% for locale in shop.published_locales %}
+        <li
+          class="localemate-item {% if locale.iso_code == localization.language.iso_code %}localemate-item--active{% endif %}"
+          role="option"
+          {% if locale.iso_code == localization.language.iso_code %}aria-selected="true"{% else %}aria-selected="false"{% endif %}
+        >
+          <a
+            href="#"
+            data-locale="{{ locale.iso_code }}"
+            class="localemate-link"
+            hreflang="{{ locale.iso_code }}"
+            {% if locale.iso_code == localization.language.iso_code %}aria-current="page"{% endif %}
+          >
+            <span class="localemate-lang-name">{{ locale.endonym_name }}</span>
+            {% if locale.iso_code == localization.language.iso_code %}
+              <span class="localemate-check" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="localemate-footer">
+      <span>Powered by LocaleMate</span>
+    </div>
+  </div>
+</div>
+
+<div id="google_translate_element" style="display:none !important;"></div>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+<script src="{{ 'language-switcher.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Language Switcher",
+  "target": "body",
+  "settings": [
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Widget position",
+      "options": [
+        { "value": "bottom-right", "label": "Bottom Right" },
+        { "value": "bottom-left",  "label": "Bottom Left"  },
+        { "value": "top-right",    "label": "Top Right"    },
+        { "value": "top-left",     "label": "Top Left"     }
+      ],
+      "default": "bottom-right"
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button background color",
+      "default": "#1a1a2e"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent / active color",
+      "default": "#6366f1"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Button corner radius",
+      "min": 4,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 50
+    }
+  ]
+}
+{% endschema %}

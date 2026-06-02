@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model GeneratedCampaign {
+  id          Int      @id @default(autoincrement())
+  template    String?
+  customPrompt String?
+  title       String
+  content     String
+  market      String
+  createdAt   DateTime @default(now())
+}
+
+model Campaign {
+  id               Int      @id @default(autoincrement())
+  title            String
+  market           String
+  productType      String
+  goal             String
+  tone             String
+  platform         String
+  generatedContent String
+  createdAt        DateTime @default(now())
+}
+
+model Suggestion {
+  id                String   @id @default(cuid())
+  market            String
+  flag              String   @default("🌐")
+  tone              String   @default("bg-gray-100")
+  currentHeadline   String
+  currentDetail     String   @default("")
+  suggestedHeadline String
+  expectedLift      Int
+  confidence        Int
+  color             String   @default("bg-teal-600")
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+}
+
+model Market {
+  id                String      @id @default(cuid())
+  shopifyMarketId   String?     @unique
+  country           String
+  countryCode       String
+  region            String
+  flag              String      @default("🌐")
+  currency          String      @default("USD")
+  language          String      @default("en")
+  visitors          Int         @default(0)
+  orders            Int         @default(0)
+  revenue           Float       @default(0)
+  conversionRate    Float       @default(0)
+  localizationScore Int         @default(0)
+  translatedItems   Int         @default(0)
+  trend             Float       @default(0)
+  isActive          Boolean     @default(true)
+  shop              String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  translations      Translation[]
+  analytics         Analytics[]
+  campaigns         MarketCampaign[]
+
+  @@unique([shop, countryCode])
+}
+
+model Translation {
+  id              String   @id @default(cuid())
+  marketId        String
+  market          Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  productId       String?
+  resourceType    String   @default("PRODUCT")
+  key             String
+  originalText    String
+  translatedText  String
+  language        String
+  aiGenerated     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Analytics {
+  id              String   @id @default(cuid())
+  marketId        String
+  market          Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  visitors        Int      @default(0)
+  orders          Int      @default(0)
+  revenue         Float    @default(0)
+  conversionRate  Float    @default(0)
+  date            DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([marketId, date])
+}
+
+model MarketCampaign {
+  id               String   @id @default(cuid())
+  marketId         String
+  market           Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  title            String
+  content          String
+  performanceScore Int      @default(0)
+  status           String   @default("draft")
+  createdAt        DateTime @default(now())
+}
