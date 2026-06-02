@@ -7,9 +7,13 @@ import {
   regenerateSuggestion,
   applyAllSuggestions,
   deleteSuggestion,
+  getAppliedSuggestions,
 } from "../controllers/suggestionController.js";
 
 const router = express.Router();
+
+// GET /api/suggestions/applied — fetch all applied suggestions
+router.get("/applied", getAppliedSuggestions);
 
 // GET /api/suggestions — fetch all suggestions
 router.get("/", getSuggestions);

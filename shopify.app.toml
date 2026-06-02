@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "804014738aef9db0c2ea3353064cdac7"
-application_url = "https://example.com"
+application_url = "https://shopify-localemate.onrender.com"
 embedded = true
 name = "LocaleMate"
 
@@ -45,7 +45,10 @@ api_version = "2026-07"
   topics = [ "app/scopes_update" ]
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [
+  "https://shopify-localemate.onrender.com/auth/callback",
+  "https://shopify-localemate.onrender.com/auth"
+]
 
 [build]
 automatically_update_urls_on_dev = true

@@ -178,6 +178,7 @@
       // Trigger client-side Google translation on-the-fly
       changeLanguage(locale);
       updateWidgetActiveLocale(locale);
+      applyAllReplacements(locale);
 
       closeDropdown();
     });
@@ -193,6 +194,7 @@
         if (selectField) {
           changeLanguage(saved);
           updateWidgetActiveLocale(saved);
+          applyAllReplacements(saved);
           clearInterval(checkInterval);
         }
         attempts++;
@@ -213,5 +215,115 @@
   checkPreviewBar();
   setTimeout(checkPreviewBar, 1000);
   setTimeout(checkPreviewBar, 3000);
+
+  // ─── AI Suggestions Integration ─────────────────────────────
+  const API_BASE = 'https://shopify-localemate.onrender.com/api';
+  let appliedSuggestions = [];
+
+  const langToMarket = {
+    'ja': 'japan',
+    'hi': 'india',
+    'de': 'germany',
+    'en': 'usa',
+    'es': 'spain',
+    'fr': 'france'
+  };
+
+  async function loadAppliedSuggestions() {
+    try {
+      const res = await fetch(`${API_BASE}/suggestions/applied`);
+      const data = await res.json();
+      if (data.success && data.suggestions) {
+        appliedSuggestions = data.suggestions;
+        markElementsToLocalize();
+        // Initial run
+        const saved = localStorage.getItem('localemate_locale') || 'en';
+        applyAllReplacements(saved);
+      }
+    } catch (e) {
+      console.error('[LocaleMate] Failed to load applied suggestions:', e);
+    }
+  }
+
+  function markElementsToLocalize() {
+    if (!appliedSuggestions.length) return;
+
+    appliedSuggestions.forEach(s => {
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+      let node;
+      while (node = walker.nextNode()) {
+        const textVal = node.nodeValue.trim();
+        // Check if node text matches the current headline
+        if (textVal === s.currentHeadline) {
+          const parent = node.parentElement;
+          if (parent && !parent.hasAttribute('data-lm-original')) {
+            parent.setAttribute('data-lm-original', s.currentHeadline);
+            // Store AI translation for the market key
+            const marketKey = s.market.toLowerCase();
+            parent.setAttribute(`data-lm-trans-${marketKey}`, s.suggestedHeadline);
+          }
+         }
+      }
+    });
+  }
+
+  function applyAllReplacements(locale) {
+    document.querySelectorAll('[data-lm-original]').forEach(el => {
+      applyReplacement(el, locale);
+    });
+  }
+
+  function applyReplacement(el, locale) {
+    const marketKey = langToMarket[locale];
+    const transAttr = `data-lm-trans-${marketKey}`;
+    const original = el.getAttribute('data-lm-original');
+
+    if (locale === 'en') {
+      el.classList.remove('notranslate');
+      if (el.textContent !== original) {
+        el.textContent = original;
+      }
+    } else if (marketKey && el.hasAttribute(transAttr)) {
+      const translation = el.getAttribute(transAttr);
+      el.classList.add('notranslate');
+      if (el.textContent !== translation) {
+        el.textContent = translation;
+      }
+    }
+  }
+
+  // Setup MutationObserver to continuously watch for translations
+  function initObserver() {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        let target = mutation.target;
+        if (target.nodeType === Node.TEXT_NODE) {
+          target = target.parentElement;
+        }
+        if (target) {
+          const marked = target.closest('[data-lm-original]');
+          if (marked) {
+            const saved = localStorage.getItem('localemate_locale') || 'en';
+            applyReplacement(marked, saved);
+          }
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  // Load suggestions and start observer on page load
+  loadAppliedSuggestions();
+  initObserver();
 
 })();

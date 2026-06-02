@@ -131,6 +131,19 @@ export async function applyAllSuggestions(req, res) {
   }
 }
 
+// GET /api/suggestions/applied — fetch all applied suggestions
+export async function getAppliedSuggestions(req, res) {
+  try {
+    const suggestions = await prisma.suggestion.findMany({
+      where: { status: "applied" },
+    });
+    return res.status(200).json({ success: true, suggestions });
+  } catch (error) {
+    console.error("getAppliedSuggestions error:", error);
+    return res.status(500).json({ success: false, error: "Failed to fetch applied suggestions." });
+  }
+}
+
 // DELETE /api/suggestions/:id
 export async function deleteSuggestion(req, res) {
   const { id } = req.params;
