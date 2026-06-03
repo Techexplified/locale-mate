@@ -2,7 +2,7 @@
 
 client_id = "75434c1dcf87415a758a5551a63cbf54"
 name = "LocaleMate"
-application_url = "https://example.com"
+application_url = "https://locale-mate.vercel.app"
 embedded = true
 
 [build]
@@ -16,4 +16,8 @@ api_version = "2026-07"
 scopes = "read_locales,read_markets,read_translations,write_locales,write_translations"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [
+  "https://locale-mate.vercel.app/auth/callback",
+  "https://locale-mate.vercel.app/auth/shopify/callback",
+  "https://locale-mate.vercel.app/api/auth/callback"
+]
