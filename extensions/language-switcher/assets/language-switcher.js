@@ -235,9 +235,15 @@
       const data = await res.json();
       if (data.success && data.suggestions) {
         appliedSuggestions = data.suggestions;
+        console.log('[LocaleMate] Loaded applied suggestions:', appliedSuggestions);
+
+        const currentCountryCode = (widget.dataset.currentCountry || 'US').toUpperCase();
+        console.log(`[LocaleMate] Storefront Country: ${currentCountryCode}, Resolved Market: ${countryToMarket[currentCountryCode] || 'unknown'}`);
+
         markElementsToLocalize();
         // Initial run
         const saved = localStorage.getItem('localemate_locale') || 'en';
+        console.log(`[LocaleMate] Storefront Locale: ${saved}`);
         applyAllReplacements(saved);
       }
     } catch (e) {
@@ -312,12 +318,29 @@
       const translation = el.getAttribute(transAttr);
       el.classList.add('notranslate');
       if (el.textContent !== translation) {
+        console.log(`[LocaleMate] Applying AI suggestion to "${original}": "${translation}" (Market: ${marketKey})`);
         el.textContent = translation;
       }
     } else {
       el.classList.remove('notranslate');
-      if (el.textContent !== original) {
-        el.textContent = original;
+      
+      // We only want to restore the text to 'original' (English) if the element is currently 
+      // displaying a custom AI translation from another market. 
+      // If it's already displaying the original English or a Google-translated version, we leave it alone.
+      let isShowingCustomTranslation = false;
+      for (let i = 0; i < el.attributes.length; i++) {
+        const attr = el.attributes[i];
+        if (attr.name.startsWith('data-lm-trans-') && el.textContent === attr.value) {
+          isShowingCustomTranslation = true;
+          break;
+        }
+      }
+
+      if (isShowingCustomTranslation || el.textContent === '') {
+        if (el.textContent !== original) {
+          console.log(`[LocaleMate] Reverting text back to original: "${original}"`);
+          el.textContent = original;
+        }
       }
     }
   }
