@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { redirect } from "react-router";
 
 export const loader = async ({ request }) => {
@@ -14,6 +15,18 @@ export const loader = async ({ request }) => {
 };
 
 export default function Index() {
+  useEffect(() => {
+    // If the app is loaded inside an iframe (Shopify Admin), redirect to /app
+    try {
+      if (window.self !== window.top) {
+        window.location.href = "/app" + window.location.search;
+      }
+    } catch (e) {
+      // If cross-origin restrictions block window.top access, we are in an iframe
+      window.location.href = "/app" + window.location.search;
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
       <div className="max-w-md text-center">
